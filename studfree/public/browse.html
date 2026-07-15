@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browse students — STUDFREE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <a href="/" class="wordmark">STUDFREE<span class="dot">.</span><small>CAMPUS FREELANCE LEDGER</small></a>
+    <nav class="primary">
+      <a href="/browse.html" class="active">Browse students</a>
+      <a href="/jobs.html">Job board</a>
+      <a href="/signup.html" data-auth="guest">Sign up</a>
+      <a href="/login.html" data-auth="guest">Log in</a>
+      <a href="/dashboard.html" data-auth="member">Dashboard</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero" style="padding:48px 0 24px;">
+  <div class="wrap">
+    <span class="eyebrow">The roster</span>
+    <h1 style="font-size:2.4rem;max-width:none;">Every student, listed like a transcript.</h1>
+    <p class="lead">Filter by skill to find who you need. Every entry is a real student with real project work.</p>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="filter-bar">
+    <input type="search" id="searchBox" placeholder="Search by name or skill…" style="max-width:280px;">
+    <span class="chip active" data-skill="">All</span>
+    <span class="chip" data-skill="Web Development">Web Development</span>
+    <span class="chip" data-skill="Graphic Design">Graphic Design</span>
+    <span class="chip" data-skill="Content Writing">Content Writing</span>
+    <span class="chip" data-skill="Video Editing">Video Editing</span>
+    <span class="chip" data-skill="UI/UX Design">UI/UX Design</span>
+    <span class="chip" data-skill="App Development">App Development</span>
+    <span class="chip" data-skill="Python">Python</span>
+    <span class="chip" data-skill="Tutoring">Tutoring</span>
+  </div>
+
+  <div class="entry-list" id="studentList">
+    <div class="empty">Loading roster…</div>
+  </div>
+</div>
+
+<div class="spacer-xl"></div>
+
+<footer>
+  <div class="wrap">
+    <p>STUDFREE — a campus freelance ledger. Built as a student project.</p>
+    <p>© 2026 STUDFREE</p>
+  </div>
+</footer>
+
+<script src="/js/app.js"></script>
+<script>
+  let activeSkill = "";
+  let query = "";
+
+  async function render() {
+    const list = document.getElementById("studentList");
+    list.innerHTML = `<div class="empty">Loading roster…</div>`;
+    try {
+      const params = new URLSearchParams();
+      if (activeSkill) params.set("skill", activeSkill);
+      if (query) params.set("q", query);
+      const { students } = await api("/students?" + params.toString());
+      if (!students.length) {
+        list.innerHTML = `<div class="empty"><h3>No matching entries</h3><p>Try a different skill or search term.</p></div>`;
+        return;
+      }
+      list.innerHTML = students.map((s, i) => `
+        <div class="entry">
+          <div class="entry-no">${String(i + 1).padStart(3, "0")}</div>
+          <div>
+            <div class="entry-title-row">
+              <h3><a href="/student.html?id=${s.id}" style="text-decoration:none;">${escapeHtml(s.name)}</a></h3>
+              ${s.projects.length ? '<span class="stamp">verified project</span>' : ""}
+            </div>
+            <div class="sub">${escapeHtml(s.college || "Student")}${s.year ? " · " + escapeHtml(s.year) : ""} · listed ${timeAgo(s.joined)}</div>
+            <p class="desc">${escapeHtml(s.bio || "No bio added yet.")}</p>
+            <div class="tag-row">${s.skills.map((sk) => `<span class="tag">${escapeHtml(sk)}</span>`).join("")}</div>
+          </div>
+          <div class="action">
+            <a href="/student.html?id=${s.id}" class="btn ghost small">View entry</a>
+          </div>
+        </div>
+      `).join("");
+    } catch (e) {
+      list.innerHTML = `<div class="empty"><h3>Server not running</h3><p>Start it with <code>node server.js</code>, then refresh.</p></div>`;
+    }
+  }
+
+  document.querySelectorAll(".chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+      chip.classList.add("active");
+      activeSkill = chip.dataset.skill;
+      render();
+    });
+  });
+
+  let debounce;
+  document.getElementById("searchBox").addEventListener("input", (e) => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => { query = e.target.value.trim(); render(); }, 250);
+  });
+
+  render();
+</script>
+</body>
+</html>

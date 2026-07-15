@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STUDFREE — Freelance work, by students, for students</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <a href="/" class="wordmark">STUDFREE<span class="dot">.</span><small>CAMPUS FREELANCE LEDGER</small></a>
+    <nav class="primary">
+      <a href="/browse.html">Browse students</a>
+      <a href="/jobs.html">Job board</a>
+      <a href="/signup.html" data-auth="guest">Sign up</a>
+      <a href="/login.html" data-auth="guest">Log in</a>
+      <a href="/dashboard.html" data-auth="member">Dashboard</a>
+      <a href="/jobs.html?post=1" class="btn small brass">Post a job</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Entry 001 — Open for enrollment</span>
+    <h1>Real work, still on campus.</h1>
+    <p class="lead">STUDFREE is where currently-enrolled students list their skills and projects, and where companies hire them for small, real paid work — no agency, no middleman, no graduation required.</p>
+    <div class="cta-row">
+      <a href="/signup.html" class="btn brass">List your skills — it's free</a>
+      <a href="/jobs.html" class="btn ghost">Browse open jobs</a>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="stat-strip" id="statStrip">
+    <div class="stat"><div class="num" id="statStudents">—</div><div class="label">Students listed</div></div>
+    <div class="stat"><div class="num" id="statJobs">—</div><div class="label">Jobs posted</div></div>
+    <div class="stat"><div class="num" id="statHired">—</div><div class="label">Students hired</div></div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="kicker">How it works</span>
+        <h2 class="mt-0">Three entries, one transcript.</h2>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="idx">01</span>
+        <h3>Build your entry</h3>
+        <p>Add your skills, past projects and a short bio. It reads like a portfolio — because it is one.</p>
+      </div>
+      <div class="step">
+        <span class="idx">02</span>
+        <h3>Get discovered or apply</h3>
+        <p>Companies browse the roster by skill, or you apply directly to posted jobs that fit you.</p>
+      </div>
+      <div class="step">
+        <span class="idx">03</span>
+        <h3>Get hired, get paid, get proof</h3>
+        <p>Finish the work, earn pocket money, and add a verified project to your resume.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0;">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="kicker">On the roster</span>
+        <h2 class="mt-0">Recently listed students</h2>
+      </div>
+      <a href="/browse.html" class="btn ghost small">View full roster →</a>
+    </div>
+    <div class="entry-list" id="featuredStudents">
+      <div class="empty">Loading roster…</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0;">
+  <div class="wrap two-col">
+    <div>
+      <span class="kicker">For students</span>
+      <h2>Turn coursework into a client list.</h2>
+      <p class="muted">Every project you've already built for a class, a hackathon, or just for fun is worth something to someone. STUDFREE puts it in front of people who'll pay for the next one.</p>
+      <a href="/signup.html" class="btn brass" style="margin-top:14px;">Create your listing</a>
+    </div>
+    <div>
+      <span class="kicker">For companies</span>
+      <h2>Hire verified students, not guesswork.</h2>
+      <p class="muted">Small jobs, real budgets. Post a brief, review applicants by skill, and hire a student directly — at a fraction of agency cost.</p>
+      <a href="/jobs.html?post=1" class="btn ghost" style="margin-top:14px;">Post a job</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>STUDFREE — a campus freelance ledger. Built as a student project.</p>
+    <p>© 2026 STUDFREE</p>
+  </div>
+</footer>
+
+<script src="/js/app.js"></script>
+<script>
+  (async function () {
+    try {
+      const { students, jobs, hired } = await api("/stats").catch(() => ({}));
+    } catch (e) {}
+  })();
+
+  async function loadStats() {
+    try {
+      const data = await api("/stats");
+      document.getElementById("statStudents").textContent = data.students;
+      document.getElementById("statJobs").textContent = data.jobs;
+      document.getElementById("statHired").textContent = data.hired;
+    } catch (e) { /* server may not be running yet */ }
+  }
+
+  async function loadFeatured() {
+    const wrap = document.getElementById("featuredStudents");
+    try {
+      const { students } = await api("/students");
+      const top = students.slice(0, 3);
+      if (!top.length) {
+        wrap.innerHTML = `<div class="empty"><h3>No entries yet</h3><p>Be the first student on the roster.</p><a href="/signup.html" class="btn brass small" style="margin-top:10px;">Sign up</a></div>`;
+        return;
+      }
+      wrap.innerHTML = top.map((s, i) => `
+        <div class="entry">
+          <div class="entry-no">${String(i + 1).padStart(3, "0")}</div>
+          <div>
+            <div class="entry-title-row">
+              <h3><a href="/student.html?id=${s.id}" style="text-decoration:none;">${escapeHtml(s.name)}</a></h3>
+              ${s.projects.length ? '<span class="stamp">verified project</span>' : ""}
+            </div>
+            <div class="sub">${escapeHtml(s.college || "Student")}${s.year ? " · " + escapeHtml(s.year) : ""}</div>
+            <div class="tag-row">${s.skills.slice(0, 5).map((sk) => `<span class="tag">${escapeHtml(sk)}</span>`).join("")}</div>
+          </div>
+          <div class="action">
+            <a href="/student.html?id=${s.id}" class="btn ghost small">View entry</a>
+          </div>
+        </div>
+      `).join("");
+    } catch (e) {
+      wrap.innerHTML = `<div class="empty"><h3>Server not running</h3><p>Start it with <code>node server.js</code>, then refresh this page.</p></div>`;
+    }
+  }
+
+  loadStats();
+  loadFeatured();
+</script>
+</body>
+</html>

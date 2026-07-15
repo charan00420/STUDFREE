@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student profile — STUDFREE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <a href="/" class="wordmark">STUDFREE<span class="dot">.</span><small>CAMPUS FREELANCE LEDGER</small></a>
+    <nav class="primary">
+      <a href="/browse.html">Browse students</a>
+      <a href="/jobs.html">Job board</a>
+      <a href="/signup.html" data-auth="guest">Sign up</a>
+      <a href="/login.html" data-auth="guest">Log in</a>
+      <a href="/dashboard.html" data-auth="member">Dashboard</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap" id="profileWrap">
+  <div class="empty" style="margin-top:40px;">Loading entry…</div>
+</div>
+
+<div class="spacer-xl"></div>
+
+<footer>
+  <div class="wrap">
+    <p>STUDFREE — a campus freelance ledger. Built as a student project.</p>
+    <p>© 2026 STUDFREE</p>
+  </div>
+</footer>
+
+<script src="/js/app.js"></script>
+<script>
+  const id = new URLSearchParams(window.location.search).get("id");
+  const wrap = document.getElementById("profileWrap");
+
+  async function load() {
+    if (!id) { wrap.innerHTML = `<div class="empty"><h3>No student selected</h3><p><a href="/browse.html">Browse the roster</a> instead.</p></div>`; return; }
+    try {
+      const { student: s } = await api("/students/" + id);
+      document.title = s.name + " — STUDFREE";
+      wrap.innerHTML = `
+        <div class="profile-head">
+          <div style="display:flex; gap:20px;">
+            <div class="avatar">${escapeHtml(s.name.charAt(0).toUpperCase())}</div>
+            <div>
+              <span class="profile-id">ENTRY / ${s.id}</span>
+              <h1 style="margin-top:4px;">${escapeHtml(s.name)}</h1>
+              <p class="muted" style="margin:2px 0 10px;">${escapeHtml(s.college || "Student")}${s.year ? " · " + escapeHtml(s.year) : ""} · listed ${timeAgo(s.joined)}</p>
+              <div class="tag-row">${s.skills.map((sk) => `<span class="tag">${escapeHtml(sk)}</span>`).join("")}</div>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+            ${s.projects.length ? '<span class="stamp">verified project</span>' : ""}
+            ${s.resumeLink ? `<a href="${s.resumeLink}" target="_blank" rel="noopener" class="btn ghost small">View resume ↗</a>` : ""}
+          </div>
+        </div>
+
+        <div class="two-col" style="margin-top:32px;">
+          <div>
+            <span class="kicker">Bio</span>
+            <p>${escapeHtml(s.bio || "This student hasn't added a bio yet.")}</p>
+          </div>
+          <div>
+            <span class="kicker">Reach out</span>
+            <p class="muted">Interested in hiring ${escapeHtml(s.name.split(" ")[0])}? Post a job on the board and mention their name, or email directly:</p>
+            <a href="mailto:${s.email}" class="btn brass small">${s.email}</a>
+          </div>
+        </div>
+
+        <div class="section" style="padding-bottom:0;">
+          <span class="kicker">Projects</span>
+          <h2 class="mt-0">Work on record</h2>
+          ${s.projects.length ? s.projects.map((p) => `
+            <div class="project-card">
+              <h4>${escapeHtml(p.title)}</h4>
+              ${p.description ? `<p class="muted" style="margin:4px 0 8px;">${escapeHtml(p.description)}</p>` : ""}
+              ${p.link ? `<a href="${p.link}" target="_blank" rel="noopener">View project ↗</a>` : ""}
+            </div>
+          `).join("") : `<div class="empty"><h3>No projects listed yet</h3><p>This student hasn't added any project work.</p></div>`}
+        </div>
+      `;
+    } catch (e) {
+      wrap.innerHTML = `<div class="empty" style="margin-top:40px;"><h3>Entry not found</h3><p><a href="/browse.html">Return to the roster</a>.</p></div>`;
+    }
+  }
+  load();
+</script>
+</body>
+</html>

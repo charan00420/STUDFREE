@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create your listing — STUDFREE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <a href="/" class="wordmark">STUDFREE<span class="dot">.</span><small>CAMPUS FREELANCE LEDGER</small></a>
+    <nav class="primary">
+      <a href="/browse.html">Browse students</a>
+      <a href="/jobs.html">Job board</a>
+      <a href="/login.html" data-auth="guest">Log in</a>
+      <a href="/dashboard.html" data-auth="member">Dashboard</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="auth-card">
+    <span class="kicker">New entry</span>
+    <h2 class="mt-0">List your skills</h2>
+    <p class="muted" style="margin-top:-8px;">Only currently-enrolled students can create a listing. It takes about two minutes.</p>
+
+    <form id="signupForm">
+      <div class="field">
+        <label for="name">Full name</label>
+        <input type="text" id="name" required placeholder="e.g. Charan Kumar">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="college">College</label>
+          <input type="text" id="college" required placeholder="Your college name">
+        </div>
+        <div class="field">
+          <label for="year">Year of study</label>
+          <select id="year" required>
+            <option value="">Select</option>
+            <option>1st year</option>
+            <option>2nd year</option>
+            <option>3rd year</option>
+            <option>4th year</option>
+            <option>Final year</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="email">College / personal email</label>
+        <input type="email" id="email" required placeholder="you@example.com">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" required minlength="6" placeholder="At least 6 characters">
+      </div>
+      <div class="field">
+        <label>Skills <span class="muted" style="font-weight:400;">(pick as many as apply)</span></label>
+        <div class="tag-picker" id="skillPicker">
+          ${''}
+        </div>
+      </div>
+      <div class="field">
+        <label for="bio">Short bio</label>
+        <textarea id="bio" placeholder="What you're good at and what kind of work you're looking for."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Add a project <span class="muted" style="font-weight:400;">(optional, you can add more later)</span></label>
+        <div class="row2">
+          <input type="text" id="projTitle" placeholder="Project title">
+          <input type="url" id="projLink" placeholder="Link (GitHub, live site, Drive)">
+        </div>
+      </div>
+      <div class="field">
+        <label for="resumeLink">Resume link <span class="muted" style="font-weight:400;">(optional — Drive/Docs link)</span></label>
+        <input type="url" id="resumeLink" placeholder="https://...">
+      </div>
+
+      <button type="submit" class="btn brass block">Create my listing</button>
+    </form>
+    <p class="switch-line">Already listed? <a href="/login.html">Log in</a></p>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p>STUDFREE — a campus freelance ledger. Built as a student project.</p>
+    <p>© 2026 STUDFREE</p>
+  </div>
+</footer>
+
+<script src="/js/app.js"></script>
+<script>
+  const SKILLS = ["Web Development","Graphic Design","Content Writing","Video Editing","UI/UX Design",
+    "Data Entry","Social Media", "App Development", "Python", "Photography", "Voice Over", "Tutoring"];
+  const picker = document.getElementById("skillPicker");
+  picker.innerHTML = SKILLS.map(s => `<span class="opt" data-skill="${s}">${s}</span>`).join("");
+  const selected = new Set();
+  picker.addEventListener("click", (e) => {
+    const el = e.target.closest(".opt");
+    if (!el) return;
+    const s = el.dataset.skill;
+    if (selected.has(s)) { selected.delete(s); el.classList.remove("selected"); }
+    else { selected.add(s); el.classList.add("selected"); }
+  });
+
+  document.getElementById("signupForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (selected.size === 0) { toast("Pick at least one skill"); return; }
+    const projects = [];
+    const pt = document.getElementById("projTitle").value.trim();
+    const pl = document.getElementById("projLink").value.trim();
+    if (pt) projects.push({ title: pt, link: pl, description: "" });
+
+    const payload = {
+      name: document.getElementById("name").value.trim(),
+      college: document.getElementById("college").value.trim(),
+      year: document.getElementById("year").value,
+      email: document.getElementById("email").value.trim(),
+      password: document.getElementById("password").value,
+      bio: document.getElementById("bio").value.trim(),
+      skills: [...selected],
+      projects,
+      resumeLink: document.getElementById("resumeLink").value.trim(),
+    };
+    const btn = e.target.querySelector("button");
+    btn.disabled = true; btn.textContent = "Creating…";
+    try {
+      const { student } = await api("/signup", { method: "POST", body: JSON.stringify(payload) });
+      Session.set(student);
+      toast("Listing created — welcome to STUDFREE");
+      setTimeout(() => (window.location.href = "/dashboard.html"), 500);
+    } catch (err) {
+      toast(err.message);
+      btn.disabled = false; btn.textContent = "Create my listing";
+    }
+  });
+</script>
+</body>
+</html>

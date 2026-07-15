@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job board — STUDFREE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <a href="/" class="wordmark">STUDFREE<span class="dot">.</span><small>CAMPUS FREELANCE LEDGER</small></a>
+    <nav class="primary">
+      <a href="/browse.html">Browse students</a>
+      <a href="/jobs.html" class="active">Job board</a>
+      <a href="/signup.html" data-auth="guest">Sign up</a>
+      <a href="/login.html" data-auth="guest">Log in</a>
+      <a href="/dashboard.html" data-auth="member">Dashboard</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero" style="padding:48px 0 24px;">
+  <div class="wrap">
+    <span class="eyebrow">The job board</span>
+    <h1 style="font-size:2.4rem;max-width:none;">Small jobs. Real budgets.</h1>
+    <p class="lead">Companies post the work here. Students apply directly — no agency fee, no long contracts.</p>
+    <div class="cta-row">
+      <button class="btn brass" id="togglePostBtn">Post a job</button>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="auth-card" id="postPanel" style="display:none; max-width:640px; margin:0 0 40px;">
+    <span class="kicker">New listing</span>
+    <h2 class="mt-0">Post a job</h2>
+    <form id="postForm">
+      <div class="row2">
+        <div class="field">
+          <label for="jTitle">Job title</label>
+          <input type="text" id="jTitle" required placeholder="e.g. Landing page redesign">
+        </div>
+        <div class="field">
+          <label for="jCompany">Your name / company</label>
+          <input type="text" id="jCompany" required placeholder="e.g. Nimbus Foods">
+        </div>
+      </div>
+      <div class="field">
+        <label for="jDesc">Description</label>
+        <textarea id="jDesc" required placeholder="What needs to be done, and what a great applicant looks like."></textarea>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="jBudget">Budget</label>
+          <input type="text" id="jBudget" placeholder="e.g. ₹3,000 or ₹500/hr">
+        </div>
+        <div class="field">
+          <label for="jSkill">Primary skill needed</label>
+          <select id="jSkill" required>
+            <option value="">Select</option>
+            <option>Web Development</option>
+            <option>Graphic Design</option>
+            <option>Content Writing</option>
+            <option>Video Editing</option>
+            <option>UI/UX Design</option>
+            <option>App Development</option>
+            <option>Python</option>
+            <option>Photography</option>
+            <option>Voice Over</option>
+            <option>Tutoring</option>
+            <option>Social Media</option>
+            <option>Data Entry</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn brass block">Publish job</button>
+    </form>
+  </div>
+
+  <div class="filter-bar">
+    <input type="search" id="searchBox" placeholder="Search jobs by title or skill…" style="max-width:280px;">
+    <span class="chip active" data-skill="">All</span>
+    <span class="chip" data-skill="Web Development">Web Development</span>
+    <span class="chip" data-skill="Graphic Design">Graphic Design</span>
+    <span class="chip" data-skill="Content Writing">Content Writing</span>
+    <span class="chip" data-skill="Video Editing">Video Editing</span>
+    <span class="chip" data-skill="UI/UX Design">UI/UX Design</span>
+    <span class="chip" data-skill="App Development">App Development</span>
+  </div>
+
+  <div class="entry-list" id="jobList">
+    <div class="empty">Loading job board…</div>
+  </div>
+</div>
+
+<div class="spacer-xl"></div>
+
+<footer>
+  <div class="wrap">
+    <p>STUDFREE — a campus freelance ledger. Built as a student project.</p>
+    <p>© 2026 STUDFREE</p>
+  </div>
+</footer>
+
+<script src="/js/app.js"></script>
+<script>
+  const postPanel = document.getElementById("postPanel");
+  const toggleBtn = document.getElementById("togglePostBtn");
+  toggleBtn.addEventListener("click", () => {
+    postPanel.style.display = postPanel.style.display === "none" ? "block" : "none";
+    if (postPanel.style.display === "block") postPanel.scrollIntoView({ behavior: "smooth" });
+  });
+  if (new URLSearchParams(window.location.search).get("post") === "1") {
+    postPanel.style.display = "block";
+  }
+
+  document.getElementById("postForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+      title: document.getElementById("jTitle").value.trim(),
+      company: document.getElementById("jCompany").value.trim(),
+      description: document.getElementById("jDesc").value.trim(),
+      budget: document.getElementById("jBudget").value.trim(),
+      skillsNeeded: [document.getElementById("jSkill").value].filter(Boolean),
+    };
+    const btn = e.target.querySelector("button");
+    btn.disabled = true; btn.textContent = "Publishing…";
+    try {
+      await api("/jobs", { method: "POST", body: JSON.stringify(payload) });
+      toast("Job published to the board");
+      e.target.reset();
+      postPanel.style.display = "none";
+      render();
+    } catch (err) {
+      toast(err.message);
+    }
+    btn.disabled = false; btn.textContent = "Publish job";
+  });
+
+  let activeSkill = "";
+  let query = "";
+
+  async function render() {
+    const list = document.getElementById("jobList");
+    list.innerHTML = `<div class="empty">Loading job board…</div>`;
+    try {
+      const params = new URLSearchParams();
+      if (activeSkill) params.set("skill", activeSkill);
+      if (query) params.set("q", query);
+      const { jobs } = await api("/jobs?" + params.toString());
+      if (!jobs.length) {
+        list.innerHTML = `<div class="empty"><h3>No jobs match yet</h3><p>Try a different filter, or be the first to post one.</p></div>`;
+        return;
+      }
+      const session = Session.get();
+      list.innerHTML = jobs.map((j, i) => {
+        const applied = session && j.applicants.some((a) => a.studentId === session.id);
+        return `
+        <div class="entry">
+          <div class="entry-no">${String(i + 1).padStart(3, "0")}</div>
+          <div>
+            <div class="entry-title-row">
+              <h3>${escapeHtml(j.title)}</h3>
+              ${j.budget ? `<span class="stamp brass">${escapeHtml(j.budget)}</span>` : ""}
+            </div>
+            <div class="sub">${escapeHtml(j.company)} · posted ${timeAgo(j.posted)} · ${j.applicants.length} applicant${j.applicants.length === 1 ? "" : "s"}</div>
+            <p class="desc">${escapeHtml(j.description)}</p>
+            <div class="tag-row">${j.skillsNeeded.map((sk) => `<span class="tag">${escapeHtml(sk)}</span>`).join("")}</div>
+          </div>
+          <div class="action">
+            ${applied
+              ? `<span class="stamp">applied</span>`
+              : `<button class="btn brass small" data-apply="${j.id}">Apply</button>`}
+          </div>
+        </div>
+        <div id="applyBox-${j.id}"></div>
+      `;
+      }).join("");
+
+      list.querySelectorAll("[data-apply]").forEach((btn) => {
+        btn.addEventListener("click", () => openApplyBox(btn.dataset.apply));
+      });
+    } catch (e) {
+      list.innerHTML = `<div class="empty"><h3>Server not running</h3><p>Start it with <code>node server.js</code>, then refresh.</p></div>`;
+    }
+  }
+
+  function openApplyBox(jobId) {
+    const session = Session.get();
+    if (!session) {
+      toast("Log in as a student to apply");
+      setTimeout(() => (window.location.href = "/login.html"), 500);
+      return;
+    }
+    const box = document.getElementById("applyBox-" + jobId);
+    if (box.dataset.open) return;
+    box.dataset.open = "1";
+    box.innerHTML = `
+      <div style="border:1px solid var(--rule); border-radius:4px; padding:16px; margin:-4px 0 22px; background:var(--card);">
+        <label>Message to the company</label>
+        <textarea id="msg-${jobId}" placeholder="Why you're a good fit, and what you'd deliver."></textarea>
+        <button class="btn brass small" style="margin-top:10px;" id="send-${jobId}">Send application</button>
+      </div>
+    `;
+    document.getElementById("send-" + jobId).addEventListener("click", async () => {
+      const message = document.getElementById("msg-" + jobId).value.trim();
+      try {
+        await api(`/jobs/${jobId}/apply`, {
+          method: "POST",
+          body: JSON.stringify({ studentId: session.id, message }),
+        });
+        toast("Application sent");
+        render();
+      } catch (err) {
+        toast(err.message);
+      }
+    });
+  }
+
+  document.querySelectorAll(".chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+      chip.classList.add("active");
+      activeSkill = chip.dataset.skill;
+      render();
+    });
+  });
+
+  let debounce;
+  document.getElementById("searchBox").addEventListener("input", (e) => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => { query = e.target.value.trim(); render(); }, 250);
+  });
+
+  render();
+</script>
+</body>
+</html>
