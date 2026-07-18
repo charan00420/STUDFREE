@@ -1,31 +1,6 @@
 {
   "students": [
-    {
-      "id": "stu_2ebb4472",
-      "name": "Sri Charan",
-      "email": "sricharan0418@gmail.com",
-      "password": "Ammu@0420",
-      "college": "MVGR COLLEGE OF ENGINEERING",
-      "year": "3rd year",
-      "bio": "jack of all trades",
-      "skills": [
-        "Web Development",
-        "App Development",
-        "Python",
-        "Photography",
-        "Video Editing",
-        "Content Writing",
-        "UI/UX Design",
-        "Data Entry",
-        "Social Media",
-        "Graphic Design",
-        "Voice Over",
-        "Tutoring"
-      ],
-      "projects": [],
-      "resumeLink": "",
-      "joined": "2026-07-15T06:02:34.519Z"
-    }
+    
   ],
   "jobs": []
 }
