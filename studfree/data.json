@@ -1,12 +1,23 @@
 {
-  "students": [
-    
+  "students": [],
+  "jobs": [
+    {
+      "id": "job_7b27554f",
+      "title": "test job",
+      "company": "abc company",
+      "description": "test",
+      "skillsNeeded": [
+        "Web Development"
+      ],
+      "budget": "100",
+      "posted": "2026-07-19T07:19:19.634Z",
+      "applicants": []
+    }
   ],
-  "jobs": [],
   "admins": [
-  {
-    "username": "admin",
-    "password": "admin123"
-  }
-]
+    {
+      "username": "admin",
+      "password": "admin123"
+    }
+  ]
 }

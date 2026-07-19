@@ -1,68 +1,136 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>StudFree Admin Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudFree Admin Dashboard</title>
+
+<link rel="stylesheet" href="css/admin.css">
 </head>
+
 <body>
-<h1>👑 StudFree Admin Dashboard</h1>
 
-<h2>Website Statistics</h2>
+<div class="sidebar">
+    <h2>👑 StudFree</h2>
 
-<p>Total Students: <span id="studentsCount">0</span></p>
-<p>Total Jobs: <span id="jobsCount">0</span></p>
-<p>Total Hired: <span id="hiredCount">0</span></p>
+    <a href="#">📊 Dashboard</a>
+    <a href="#">👥 Students</a>
+    <a href="/jobs-admin.html">💼 Jobs</a>
+    <a href="#">📈 Analytics</a>
+    <a href="#">⚙️ Settings</a>
+    <a href="#">🚪 Logout</a>
+</div>
 
-<hr>
+<div class="main">
+
+<h1>Dashboard</h1>
+
+<div class="cards">
+
+<div class="card">
+<h3>Total Students</h3>
+<p id="studentsCount">0</p>
+</div>
+
+<div class="card">
+<h3>Total Jobs</h3>
+<p id="jobsCount">0</p>
+</div>
+
+<div class="card">
+<h3>Students Hired</h3>
+<p id="hiredCount">0</p>
+</div>
+
+</div>
 
 <h2>Registered Students</h2>
-<ul id="students"></ul>
+
+<table>
+
+<thead>
+
+<tr>
+<th>Name</th>
+<th>Email</th>
+<th>Action</th>
+</tr>
+
+</thead>
+
+<tbody id="studentsTable">
+
+</tbody>
+
+</table>
+
+</div>
 
 <script>
-async function loadStats() {
-    const res = await fetch("/api/stats");
-    const data = await res.json();
 
-    document.getElementById("studentsCount").textContent = data.students;
-    document.getElementById("jobsCount").textContent = data.jobs;
-    document.getElementById("hiredCount").textContent = data.hired;
+async function loadStats(){
+
+const res=await fetch("/api/stats");
+
+const data=await res.json();
+
+document.getElementById("studentsCount").innerText=data.students;
+document.getElementById("jobsCount").innerText=data.jobs;
+document.getElementById("hiredCount").innerText=data.hired;
+
 }
 
-async function loadStudents() {
-    const res = await fetch("/api/students");
-    const data = await res.json();
+async function loadStudents(){
 
-    const list = document.getElementById("students");
-    list.innerHTML = "";
+const res=await fetch("/api/students");
 
-    data.students.forEach(student => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-            ${student.name} (${student.email})
-            <button onclick="deleteStudent('${student.id}')">Delete</button>
-        `;
-        list.appendChild(li);
-    });
+const data=await res.json();
+
+const table=document.getElementById("studentsTable");
+
+table.innerHTML="";
+
+data.students.forEach(student=>{
+
+table.innerHTML+=`
+<tr>
+<td>${student.name}</td>
+<td>${student.email}</td>
+<td>
+<button onclick="deleteStudent('${student.id}')">
+Delete
+</button>
+</td>
+</tr>
+`;
+
+});
+
 }
 
-async function deleteStudent(id) {
-    if (!confirm("Delete this student?")) return;
+async function deleteStudent(id){
 
-    const res = await fetch("/api/students/" + id, {
-        method: "DELETE"
-    });
+if(!confirm("Delete this student?")) return;
 
-    if (res.ok) {
-        loadStudents();
-        loadStats();
-    } else {
-        alert("Delete failed");
-    }
+const res=await fetch("/api/students/"+id,{
+method:"DELETE"
+});
+
+if(res.ok){
+
+loadStudents();
+
+loadStats();
+
+}
+
 }
 
 loadStats();
-loadStudents();
-</script>
 
+loadStudents();
+
+</script>
 
 </body>
 </html>

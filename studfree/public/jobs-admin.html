@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Jobs - StudFree</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>👑 StudFree</h2>
+
+    <a href="/admin-dashboard.html">📊 Dashboard</a>
+    <a href="#">👥 Students</a>
+    <a href="/jobs-admin.html">💼 Jobs</a>
+    <a href="#">📈 Analytics</a>
+    <a href="#">⚙️ Settings</a>
+</div>
+
+<div class="main">
+
+<h1>Manage Jobs</h1>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Title</th>
+<th>Company</th>
+<th>Budget</th>
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="jobsTable">
+
+</tbody>
+
+</table>
+
+</div>
+
+<script>
+
+async function loadJobs(){
+
+    const res = await fetch("/api/jobs");
+
+    const data = await res.json();
+
+    const table = document.getElementById("jobsTable");
+
+    table.innerHTML = "";
+
+    data.jobs.forEach(job => {
+
+        table.innerHTML += `
+        <tr>
+            <td>${job.title}</td>
+            <td>${job.company}</td>
+            <td>${job.budget}</td>
+            <td>
+                <button>Delete</button>
+            </td>
+        </tr>
+        `;
+
+    });
+
+}
+
+loadJobs();
+
+</script>
+
+</body>
+</html>
