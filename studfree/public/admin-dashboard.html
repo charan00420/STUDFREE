@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>StudFree Admin Dashboard</title>
+</head>
+<body>
+<h1>👑 StudFree Admin Dashboard</h1>
+
+<h2>Website Statistics</h2>
+
+<p>Total Students: <span id="studentsCount">0</span></p>
+<p>Total Jobs: <span id="jobsCount">0</span></p>
+<p>Total Hired: <span id="hiredCount">0</span></p>
+
+<hr>
+
+<h2>Registered Students</h2>
+<ul id="students"></ul>
+
+<script>
+async function loadStats() {
+    const res = await fetch("/api/stats");
+    const data = await res.json();
+
+    document.getElementById("studentsCount").textContent = data.students;
+    document.getElementById("jobsCount").textContent = data.jobs;
+    document.getElementById("hiredCount").textContent = data.hired;
+}
+
+async function loadStudents() {
+    const res = await fetch("/api/students");
+    const data = await res.json();
+
+    const list = document.getElementById("students");
+    list.innerHTML = "";
+
+    data.students.forEach(student => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+            ${student.name} (${student.email})
+            <button onclick="deleteStudent('${student.id}')">Delete</button>
+        `;
+        list.appendChild(li);
+    });
+}
+
+async function deleteStudent(id) {
+    if (!confirm("Delete this student?")) return;
+
+    const res = await fetch("/api/students/" + id, {
+        method: "DELETE"
+    });
+
+    if (res.ok) {
+        loadStudents();
+        loadStats();
+    } else {
+        alert("Delete failed");
+    }
+}
+
+loadStats();
+loadStudents();
+</script>
+
+
+</body>
+</html>

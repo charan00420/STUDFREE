@@ -2,5 +2,11 @@
   "students": [
     
   ],
-  "jobs": []
+  "jobs": [],
+  "admins": [
+  {
+    "username": "admin",
+    "password": "admin123"
+  }
+]
 }

@@ -100,6 +100,26 @@ async function handleApi(req, res, pathname, query) {
   const db = loadDB();
 
   // ---- AUTH ----
+  if (pathname === "/api/admin/login" && req.method === "POST") {
+  const b = await readBody(req);
+
+  const admin = (db.admins || []).find(
+    (a) =>
+      a.username === b.username &&
+      a.password === b.password
+  );
+
+  if (!admin) {
+    return sendJSON(res, 401, { error: "Invalid admin credentials" });
+  }
+
+  return sendJSON(res, 200, {
+    success: true,
+    admin: {
+      username: admin.username
+    }
+  });
+}
   if (pathname === "/api/signup" && req.method === "POST") {
     const b = await readBody(req);
     if (!b.name || !b.email || !b.password) {
@@ -159,6 +179,22 @@ async function handleApi(req, res, pathname, query) {
     if (!student) return sendJSON(res, 404, { error: "Student not found" });
     return sendJSON(res, 200, { student: publicStudent(student) });
   }
+  // DELETE student
+if (studentMatch && req.method === "DELETE") {
+  const index = db.students.findIndex((s) => s.id === studentMatch[1]);
+
+  if (index === -1) {
+    return sendJSON(res, 404, { error: "Student not found" });
+  }
+
+  db.students.splice(index, 1);
+  saveDB(db);
+
+  return sendJSON(res, 200, {
+    success: true,
+    message: "Student deleted successfully"
+  });
+}
 
   // add a project to an existing student profile (dashboard)
   const addProjectMatch = pathname.match(/^\/api\/students\/([^/]+)\/projects$/);
