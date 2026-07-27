@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>StudFree Admin Login</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f4f6f9;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.box{
+background:white;
+padding:30px;
+border-radius:10px;
+box-shadow:0 0 15px rgba(0,0,0,.15);
+width:350px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin:10px 0;
+}
+
+button{
+width:100%;
+padding:12px;
+background:#0066ff;
+color:white;
+border:none;
+cursor:pointer;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>Admin Login</h2>
+
+<form id="loginForm">
+
+<input
+id="username"
+placeholder="Username"
+required>
+
+<input
+id="password"
+type="password"
+placeholder="Password"
+required>
+
+<button>Login</button>
+
+</form>
+
+</div>
+
+<script>
+
+document.getElementById("loginForm").addEventListener("submit",async(e)=>{
+
+e.preventDefault();
+
+const res=await fetch("/api/admin/login",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+username:document.getElementById("username").value,
+
+password:document.getElementById("password").value
+
+})
+
+});
+
+if(res.ok){
+
+localStorage.setItem("admin","true");
+
+window.location="/admin-dashboard.html";
+
+}else{
+
+alert("Invalid Admin Login");
+
+}
+
+});
+
+</script>
+
+</body>
+</html>

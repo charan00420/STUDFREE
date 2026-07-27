@@ -48,6 +48,7 @@
 
 <script>
 
+
 async function loadJobs(){
 
     const res = await fetch("/api/jobs");
@@ -66,7 +67,7 @@ async function loadJobs(){
             <td>${job.company}</td>
             <td>${job.budget}</td>
             <td>
-                <button>Delete</button>
+            <button onclick="deleteJob('${job.id}')">Delete</button>
             </td>
         </tr>
         `;
@@ -76,6 +77,21 @@ async function loadJobs(){
 }
 
 loadJobs();
+async function deleteJob(id){
+
+    if(!confirm("Delete this job?")) return;
+
+    const res = await fetch("/api/jobs/" + id,{
+        method:"DELETE"
+    });
+
+    if(res.ok){
+        alert("Job deleted successfully!");
+        loadJobs();
+    }else{
+        alert("Failed to delete job.");
+    }
+}
 
 </script>
 

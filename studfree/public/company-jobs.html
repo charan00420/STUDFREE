@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>My Jobs</title>
+</head>
+
+<body>
+
+<h1>My Jobs</h1>
+
+<table border="1">
+
+<thead>
+<tr>
+<th>Title</th>
+<th>Company</th>
+<th>Budget</th>
+</tr>
+</thead>
+
+<tbody id="jobsTable">
+
+</tbody>
+
+</table>
+
+<script>
+
+async function loadJobs(){
+
+const company = JSON.parse(localStorage.getItem("company"));
+
+const res = await fetch("/api/jobs");
+
+const data = await res.json();
+
+const table = document.getElementById("jobsTable");
+
+table.innerHTML = "";
+
+data.jobs
+.filter(job => job.companyEmail === company.email)
+.forEach(job => {
+
+table.innerHTML += `
+<tr>
+<td>${job.title}</td>
+<td>${job.company}</td>
+<td>${job.budget}</td>
+</tr>
+`;
+
+});
+
+}
+
+loadJobs();
+
+</script>
+
+</body>
+</html>

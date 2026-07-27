@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Post Job</title>
+</head>
+
+<body>
+
+<h1>Post a Job</h1>
+
+<form id="jobForm">
+
+<input id="title" placeholder="Job Title" required><br><br>
+
+<input id="company" placeholder="Company Name" required><br><br>
+
+<textarea id="description" placeholder="Description"></textarea><br><br>
+
+<input id="budget" placeholder="Budget"><br><br>
+
+<input id="skills" placeholder="Skills (comma separated)"><br><br>
+
+<button type="submit">Post Job</button>
+
+</form>
+
+<script>
+
+document.getElementById("jobForm").addEventListener("submit", async function(e){
+
+e.preventDefault();
+
+const company = JSON.parse(localStorage.getItem("company"));
+
+const payload = {
+    title: document.getElementById("title").value,
+    company: document.getElementById("company").value,
+    description: document.getElementById("description").value,
+    budget: document.getElementById("budget").value,
+    skillsNeeded: document.getElementById("skills").value.split(",").map(s => s.trim()),
+    companyId: company.id,
+    companyEmail: company.email
+};
+
+const res = await fetch("/api/jobs", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+});
+
+if(res.ok){
+    alert("Job Posted Successfully");
+    document.getElementById("jobForm").reset();
+}else{
+    alert("Failed to post job");
+}
+
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Company Dashboard</title>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#f4f4f4;
+margin:0;
+}
+
+header{
+background:#2563eb;
+color:white;
+padding:15px;
+font-size:22px;
+}
+
+.container{
+padding:30px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:10px;
+margin-bottom:20px;
+box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+button{
+padding:10px 20px;
+background:#2563eb;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+</style>
+
+</head>
+
+<body>
+
+<header>
+Company Dashboard
+</header>
+
+<div class="container">
+    <div class="card">
+
+<h2>Post a Job</h2>
+
+<button onclick="window.location.href='/company-post-job.html'">
+Post New Job
+</button>
+
+</div>
+
+<div class="card">
+<h2 id="companyName"></h2>
+<p id="companyEmail"></p>
+</div>
+
+<div class="card">
+<h2>Post a New Job</h2>
+
+<button onclick="window.location='/company-post-job.html'">
+Post New Job
+</button>
+Go to Job Board
+</button>
+<button onclick="window.location='/company-jobs.html'">
+My Jobs
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+const company = JSON.parse(localStorage.getItem("company"));
+
+if(!company){
+window.location="/company-login.html";
+}
+
+document.getElementById("companyName").innerText=company.companyName;
+document.getElementById("companyEmail").innerText=company.email;
+
+</script>
+
+</body>
+</html>

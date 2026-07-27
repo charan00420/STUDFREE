@@ -1,16 +1,50 @@
 {
-  "students": [],
+  "students": [
+    {
+      "id": "stu_bff9c4de",
+      "name": "sri charan",
+      "email": "sricharan0418@gmail.com",
+      "password": "7c61523b8a84762721dc963e8ff17d820292e15eab93d91f0099d9858b2ad291",
+      "college": "MVGR College of engineering",
+      "year": "3rd year",
+      "bio": "keen to learn",
+      "skills": [
+        "Web Development",
+        "Graphic Design",
+        "Content Writing",
+        "Data Entry",
+        "Video Editing",
+        "Python",
+        "App Development",
+        "UI/UX Design"
+      ],
+      "projects": [],
+      "resumeLink": "",
+      "joined": "2026-07-19T08:24:39.098Z"
+    }
+  ],
+  "companies": [
+    {
+      "id": "cmp_42d11059",
+      "companyName": "Technova",
+      "email": "hr@technova.com",
+      "password": "123456",
+      "website": "",
+      "description": "",
+      "joined": "2026-07-26T07:09:45.169Z"
+    }
+  ],
   "jobs": [
     {
-      "id": "job_7b27554f",
-      "title": "test job",
-      "company": "abc company",
-      "description": "test",
+      "id": "job_7737189f",
+      "title": "frontend developer",
+      "company": "technova",
+      "description": "looking for a react developer",
       "skillsNeeded": [
         "Web Development"
       ],
-      "budget": "100",
-      "posted": "2026-07-19T07:19:19.634Z",
+      "budget": "15000",
+      "posted": "2026-07-26T07:42:46.021Z",
       "applicants": []
     }
   ],

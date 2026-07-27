@@ -18,7 +18,7 @@
     <a href="/jobs-admin.html">💼 Jobs</a>
     <a href="#">📈 Analytics</a>
     <a href="#">⚙️ Settings</a>
-    <a href="#">🚪 Logout</a>
+    <a href="#" onclick="logout()">🚪 Logout</a>
 </div>
 
 <div class="main">
@@ -45,6 +45,12 @@
 </div>
 
 <h2>Registered Students</h2>
+<input
+    type="text"
+    id="searchStudent"
+    placeholder="Search by name or email..."
+    style="padding:10px;width:300px;margin-bottom:15px;"
+    onkeyup="searchStudents()">
 
 <table>
 
@@ -67,6 +73,9 @@
 </div>
 
 <script>
+    if(localStorage.getItem("admin") !== "true"){
+    window.location = "/admin-login.html";
+}
 
 async function loadStats(){
 
@@ -81,6 +90,7 @@ document.getElementById("hiredCount").innerText=data.hired;
 }
 
 async function loadStudents(){
+   
 
 const res=await fetch("/api/students");
 
@@ -90,13 +100,31 @@ const table=document.getElementById("studentsTable");
 
 table.innerHTML="";
 
-data.students.forEach(student=>{
+window.allStudents = data.students;
 
-table.innerHTML+=`
+displayStudents(data.students);
+}
+function displayStudents(students){
+
+const table = document.getElementById("studentsTable");
+
+table.innerHTML = "";
+
+students.forEach(student=>{
+
+table.innerHTML += `
 <tr>
 <td>${student.name}</td>
 <td>${student.email}</td>
 <td>
+<button onclick="viewStudent('${student.id}')">
+View
+</button>
+
+<button onclick="editStudent('${student.id}')">
+Edit
+</button>
+
 <button onclick="deleteStudent('${student.id}')">
 Delete
 </button>
@@ -105,6 +133,79 @@ Delete
 `;
 
 });
+
+}
+function searchStudents(){
+
+const text = document.getElementById("searchStudent").value.toLowerCase();
+
+const filtered = window.allStudents.filter(student =>
+
+student.name.toLowerCase().includes(text) ||
+
+student.email.toLowerCase().includes(text)
+
+);
+
+displayStudents(filtered);
+
+}
+let editingStudentId = null;
+
+function editStudent(id){
+
+const student = window.allStudents.find(s => s.id === id);
+
+if(!student) return;
+
+editingStudentId = id;
+
+document.getElementById("eName").value = student.name || "";
+document.getElementById("eEmail").value = student.email || "";
+document.getElementById("eCollege").value = student.college || "";
+document.getElementById("eYear").value = student.year || "";
+document.getElementById("eBio").value = student.bio || "";
+
+document.getElementById("studentModal").style.display = "block";
+
+}
+function closeModal(){
+
+document.getElementById("studentModal").style.display = "none";
+
+}
+async function saveStudent(){
+
+const payload = {
+    name: document.getElementById("eName").value,
+    college: document.getElementById("eCollege").value,
+    year: document.getElementById("eYear").value,
+    bio: document.getElementById("eBio").value
+};
+
+const res = await fetch("/api/students/" + editingStudentId,{
+    method:"PATCH",
+    headers:{
+        "Content-Type":"application/json"
+    },
+    body: JSON.stringify(payload)
+});
+
+if(res.ok){
+
+    alert("Student updated successfully!");
+
+    closeModal();
+
+    loadStudents();
+
+    loadStats();
+
+}else{
+
+    alert("Failed to update student.");
+
+}
 
 }
 
@@ -129,8 +230,57 @@ loadStats();
 loadStats();
 
 loadStudents();
+function logout(){
+
+    localStorage.removeItem("admin");
+
+    window.location = "/admin-login.html";
+
+}
 
 </script>
+<div id="studentModal" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.6);
+">
+
+<div style="
+background:white;
+width:450px;
+margin:80px auto;
+padding:20px;
+border-radius:10px;
+">
+<h2>Edit Student</h2>
+
+<label>Name</label><br>
+<input id="eName" style="width:100%;margin-bottom:10px;"><br>
+
+<label>Email</label><br>
+<input id="eEmail" disabled style="width:100%;margin-bottom:10px;"><br>
+
+<label>College</label><br>
+<input id="eCollege" style="width:100%;margin-bottom:10px;"><br>
+
+<label>Year</label><br>
+<input id="eYear" style="width:100%;margin-bottom:10px;"><br>
+
+<label>Bio</label><br>
+<textarea id="eBio" style="width:100%;height:80px;"></textarea><br><br>
+
+<button onclick="saveStudent()">Save</button>
+<button onclick="closeModal()">Close</button>
+
+
+
+</div>
+
+</div>
 
 </body>
 </html>

@@ -19,11 +19,21 @@ const PUBLIC_DIR = path.join(__dirname, "public");
 // ---------- tiny "database" helpers ----------
 function loadDB() {
   if (!fs.existsSync(DATA_FILE)) {
-    const seed = { students: [], jobs: [] };
+    const seed = {
+    students: [],
+    companies: [],
+    jobs: []
+};
     fs.writeFileSync(DATA_FILE, JSON.stringify(seed, null, 2));
     return seed;
   }
-  return JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+  const db = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+
+db.students = db.students || [];
+db.companies = db.companies || [];
+db.jobs = db.jobs || [];
+
+return db;
 }
 function saveDB(db) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
@@ -98,16 +108,110 @@ function serveStatic(req, res, pathname) {
 // ---------- API route handlers ----------
 async function handleApi(req, res, pathname, query) {
   const db = loadDB();
+  // ---- ADMIN LOGIN ----
+if (pathname === "/api/admin/login" && req.method === "POST") {
+
+    const b = await readBody(req);
+
+    if (
+        b.username === "admin" &&
+        b.password === "studfree123"
+    ) {
+        return sendJSON(res, 200, { success: true });
+    }
+
+    return sendJSON(res, 401, {
+        error: "Invalid admin credentials"
+    });
+}
 
   // ---- AUTH ----
+  // ---- COMPANY SIGNUP ----
+if (pathname === "/api/company/signup" && req.method === "POST") {
+
+    const b = await readBody(req);
+
+    if (!b.companyName || !b.email || !b.password) {
+        return sendJSON(res, 400, {
+            error: "Company name, email and password are required"
+        });
+    }
+
+    if (db.companies.some(c => c.email.toLowerCase() === b.email.toLowerCase())) {
+        return sendJSON(res, 409, {
+            error: "Company already exists"
+        });
+    }
+
+    const company = {
+        id: newId("cmp"),
+        companyName: b.companyName,
+        email: b.email,
+        password: hashPassword(b.password),
+        website: b.website || "",
+        description: b.description || "",
+        joined: new Date().toISOString()
+    };
+
+    db.companies.push(company);
+
+    saveDB(db);
+
+    return sendJSON(res, 201, {
+        company: {
+            id: company.id,
+            companyName: company.companyName,
+            email: company.email
+        }
+    });
+
+}
+// ---- COMPANY LOGIN ----
+if (pathname === "/api/company/login" && req.method === "POST") {
+
+    const b = await readBody(req);
+
+    const company = db.companies.find(
+        c => c.email.toLowerCase() === (b.email || "").toLowerCase()
+    );
+
+    if (!company || company.password !== (b.password || "")) {
+        return sendJSON(res,401,{
+            error:"Invalid company email or password"
+        });
+    }
+
+    return sendJSON(res,200,{
+        company:{
+            id:company.id,
+            companyName:company.companyName,
+            email:company.email
+        }
+    });
+
+}
   if (pathname === "/api/admin/login" && req.method === "POST") {
   const b = await readBody(req);
 
-  const admin = (db.admins || []).find(
-    (a) =>
-      a.username === b.username &&
-      a.password === b.password
-  );
+console.log("Email:", b.email);
+console.log("Password entered:", b.password);
+
+const student = db.students.find(
+  s => s.email.toLowerCase() === (b.email || "").toLowerCase()
+);
+
+console.log("Student found:", !!student);
+
+if (student) {
+  console.log("Stored password:", student.password);
+  console.log("Entered hash:", hashPassword(b.password || ""));
+}
+
+if (!student || student.password !== hashPassword(b.password || "")) {
+  return sendJSON(res, 401, { error: "Invalid email or password" });
+}
+
+return sendJSON(res, 200, { student: publicStudent(student) });
 
   if (!admin) {
     return sendJSON(res, 401, { error: "Invalid admin credentials" });
@@ -179,6 +283,38 @@ async function handleApi(req, res, pathname, query) {
     if (!student) return sendJSON(res, 404, { error: "Student not found" });
     return sendJSON(res, 200, { student: publicStudent(student) });
   }
+  if (studentMatch && req.method === "DELETE") {
+    const index = db.students.findIndex(s => s.id === studentMatch[1]);
+
+    if (index === -1) {
+        return sendJSON(res, 404, { error: "Student not found" });
+    }
+    if (studentMatch && req.method === "PATCH") {
+
+    const student = db.students.find(s => s.id === studentMatch[1]);
+
+    if (!student) {
+        return sendJSON(res, 404, { error: "Student not found" });
+    }
+
+    const b = await readBody(req);
+
+    student.name = b.name || student.name;
+    student.college = b.college || student.college;
+    student.year = b.year || student.year;
+    student.bio = b.bio || student.bio;
+
+    saveDB(db);
+
+    return sendJSON(res, 200, { student: publicStudent(student) });
+
+}
+
+    db.students.splice(index, 1);
+    saveDB(db);
+
+    return sendJSON(res, 200, { success: true });
+}
   // DELETE student
 if (studentMatch && req.method === "DELETE") {
   const index = db.students.findIndex((s) => s.id === studentMatch[1]);
@@ -269,6 +405,18 @@ if (studentMatch && req.method === "DELETE") {
     if (!job) return sendJSON(res, 404, { error: "Job not found" });
     return sendJSON(res, 200, { job });
   }
+  if (jobMatch && req.method === "DELETE") {
+    const index = db.jobs.findIndex(j => j.id === jobMatch[1]);
+
+    if (index === -1) {
+        return sendJSON(res, 404, { error: "Job not found" });
+    }
+
+    db.jobs.splice(index, 1);
+    saveDB(db);
+
+    return sendJSON(res, 200, { success: true });
+}
 
   const applyMatch = pathname.match(/^\/api\/jobs\/([^/]+)\/apply$/);
   if (applyMatch && req.method === "POST") {
