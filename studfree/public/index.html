@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/modern.css">
 </head>
 <body>
 
@@ -27,11 +28,20 @@
 <section class="hero">
   <div class="wrap">
     <span class="eyebrow">Entry 001 — Open for enrollment</span>
-    <h1>Real work, still on campus.</h1>
-    <p class="lead">STUDFREE is where currently-enrolled students list their skills and projects, and where companies hire them for small, real paid work — no agency, no middleman, no graduation required.</p>
-    <div class="cta-row">
-      <a href="/signup.html" class="btn brass">List your skills — it's free</a>
-      <a href="/jobs.html" class="btn ghost">Browse open jobs</a>
+    <h1>
+Build your career<br>
+before graduation.
+</h1>
+    <p class="lead">
+India's campus freelance platform where students showcase their skills, build portfolios, earn from real projects, and connect directly with companies looking for fresh talent.
+</p>
+      <a href="/signup.html" class="btn brass">
+🚀 Get Started Free
+</a>
+
+<a href="/jobs.html" class="btn ghost">
+💼 Explore Jobs
+</a>
     </div>
   </div>
 </section>
@@ -103,7 +113,71 @@
     </div>
   </div>
 </section>
+<section class="section">
+  <div class="wrap">
 
+    <div class="section-head">
+      <div>
+        <span class="kicker">Why StudFree?</span>
+        <h2 class="mt-0">Built for students. Trusted by companies.</h2>
+      </div>
+    </div>
+
+    <div class="features">
+
+      <div class="feature-card">
+        <h3>🎓 Student Portfolio</h3>
+        <p>Create a professional profile showcasing your skills, projects, and achievements.</p>
+      </div>
+
+      <div class="feature-card">
+        <h3>💼 Real Job Opportunities</h3>
+        <p>Apply for internships, freelance work, and part-time projects from verified companies.</p>
+      </div>
+
+      <div class="feature-card">
+        <h3>🏢 Company Hiring</h3>
+        <p>Businesses can discover talented students and hire them directly with ease.</p>
+      </div>
+
+      <div class="feature-card">
+        <h3>🚀 Career Growth</h3>
+        <p>Build experience, strengthen your resume, and prepare for your professional career.</p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="kicker">Success Stories</span>
+        <h2 class="mt-0">Students building their careers through StudFree</h2>
+      </div>
+    </div>
+
+    <div class="features">
+
+      <div class="feature-card">
+        <h3>👨‍💻 Rahul Kumar</h3>
+        <p>"I earned my first ₹18,000 building a website while still in college."</p>
+      </div>
+
+      <div class="feature-card">
+        <h3>🎨 Priya Sharma</h3>
+        <p>"StudFree helped me find freelance UI/UX projects and build my portfolio."</p>
+      </div>
+
+      <div class="feature-card">
+        <h3>💼 TechNova Pvt Ltd</h3>
+        <p>"Hiring talented students through StudFree saved us both time and money."</p>
+      </div>
+
+    </div>
+  </div>
+</section>
 <footer>
   <div class="wrap">
     <p>STUDFREE — a campus freelance ledger. Built as a student project.</p>
@@ -139,6 +213,9 @@
       }
       wrap.innerHTML = top.map((s, i) => `
         <div class="entry">
+          <div class="avatar">
+    ${escapeHtml(s.name.charAt(0).toUpperCase())}
+</div>
           <div class="entry-no">${String(i + 1).padStart(3, "0")}</div>
           <div>
             <div class="entry-title-row">

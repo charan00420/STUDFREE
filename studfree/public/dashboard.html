@@ -34,13 +34,52 @@
 </div>
 
 <div id="content" style="display:none;">
-  <section class="hero" style="padding:40px 0 12px;">
-    <div class="wrap">
-      <span class="eyebrow">Your entry</span>
-      <h1 style="font-size:2.2rem;max-width:none;" data-session-name-h></h1>
-      <p class="lead" id="subline"></p>
+  <section class="dashboard-hero">
+    <section class="section" style="padding-top:25px;">
+  <div class="wrap">
+
+    <div class="stats-grid">
+
+      <div class="stat-card">
+        <h2 id="projectCount">0</h2>
+        <p>Projects</p>
+      </div>
+
+      <div class="stat-card">
+        <h2 id="applicationCount">0</h2>
+        <p>Applications</p>
+      </div>
+
+      <div class="stat-card">
+        <h2 id="hiredCount">0</h2>
+        <p>Hired</p>
+      </div>
+
     </div>
-  </section>
+
+  </div>
+</section>
+
+<div class="wrap dashboard-hero-grid"> <div> <span class="eyebrow">Student dashboard</span> <h1 data-session-name-h></h1> <p class="lead" id="subline"></p>
+  <div class="dashboard-actions">
+    <a href="/jobs.html" class="btn brass">💼 Browse jobs</a>
+    <a href="/browse.html" class="btn ghost">🌐 Explore students</a>
+  </div>
+</div>
+
+<div class="profile-card">
+  <div class="profile-avatar" data-session-initial>C</div>
+  <h3 data-session-name-card>Student</h3>
+  <p>Active on StudFree</p>
+
+  <div class="completion">
+    <div class="completion-bar">
+      <span style="width:82%"></span>
+    </div>
+    <small>Profile completion: 82%</small>
+  </div>
+</div>
+</div> </section>
 
   <div class="wrap">
     <div class="two-col">
@@ -103,14 +142,30 @@
 
   async function init() {
     document.querySelector("[data-session-name-h]").textContent = session.name;
+    document.querySelector("[data-session-name-card]").textContent = session.name; document.querySelector("[data-session-initial]").textContent = (session.name || "S").charAt(0).toUpperCase()
     try {
       const { student } = await api("/students/" + session.id);
       document.getElementById("subline").textContent =
         `${student.college || "Student"}${student.year ? " · " + student.year : ""} · skills: ${student.skills.join(", ") || "none listed"}`;
       renderProjects(student.projects);
+      document.getElementById("projectCount").textContent =
+student.projects.length;
+let score = 0;
+
+if (student.name) score += 15;
+if (student.bio) score += 20;
+if (student.college) score += 15;
+if (student.year) score += 10;
+if (student.skills && student.skills.length) score += 20;
+if (student.projects && student.projects.length) score += 20;
+
+document.querySelector(".completion-bar span").style.width = score + "%";
+document.querySelector(".completion small").textContent =
+    `Profile completion: ${score}%`;
     } catch (e) {}
     loadApplications();
   }
+
 
   function renderProjects(projects) {
     const el = document.getElementById("projectList");
@@ -157,6 +212,10 @@
     const el = document.getElementById("applicationList");
     try {
       const { applications } = await api(`/students/${session.id}/applications`);
+      document.getElementById("applicationCount").textContent = applications.length;
+
+document.getElementById("hiredCount").textContent =
+applications.filter(a => a.application.status === "hired").length;
       if (!applications.length) {
         el.innerHTML = `<div class="empty"><h3>No applications yet</h3><p>Browse the <a href="/jobs.html">job board</a> and apply to something.</p></div>`;
         return;

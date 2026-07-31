@@ -48,6 +48,11 @@ table.innerHTML += `
 <td>${job.title}</td>
 <td>${job.company}</td>
 <td>${job.budget}</td>
+<td>
+<button onclick="viewApplicants('${job.id}')">
+View Applicants (${job.applicants.length})
+</button>
+</td>
 </tr>
 `;
 
@@ -56,7 +61,67 @@ table.innerHTML += `
 }
 
 loadJobs();
+function viewApplicants(jobId){
 
+const company = JSON.parse(localStorage.getItem("company"));
+
+fetch("/api/jobs")
+.then(res => res.json())
+.then(data => {
+
+const job = data.jobs.find(j => j.id === jobId);
+
+if(!job){
+alert("Job not found");
+return;
+}
+
+if(job.companyEmail !== company.email){
+alert("Unauthorized");
+return;
+}
+
+if(job.applicants.length === 0){
+alert("No applicants yet.");
+return;
+}
+
+let text = "";
+
+job.applicants.forEach((a,index)=>{
+
+text += `${index + 1}. ${a.studentName}\n`;
+text += `Message: ${a.message}\n`;
+text += `Status: ${a.status}\n`;
+
+if (a.status === "pending") {
+    text += `Hire URL: /api/jobs/${job.id}/hire/${a.studentId}\n`;
+}
+
+text += "\n";
+});
+
+alert(text);
+
+});
+
+}
+async function hireStudent(jobId, studentId){
+
+const res = await fetch(`/api/jobs/${jobId}/hire/${studentId}`,{
+method:"POST"
+});
+
+const data = await res.json();
+
+if(res.ok){
+alert("Student hired successfully!");
+loadJobs();
+}else{
+alert(data.error);
+}
+
+}
 </script>
 
 </body>

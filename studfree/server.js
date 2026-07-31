@@ -9,44 +9,48 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const multer = require("multer");
+// ===== Multer Configuration =====
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+
+  filename: (req, file, cb) => {
+    const unique = Date.now() + "-" + Math.round(Math.random() * 1E9);
+    cb(null, unique + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF files are allowed"));
+    }
+  }
+});
+const { loadDB, saveDB } = require("./utils/db");
+const { hashPassword } = require("./utils/auth");
 const url = require("url");
 const crypto = require("crypto");
+const authRoutes = require("./routes/auth");
 
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, "data.json");
 const PUBLIC_DIR = path.join(__dirname, "public");
 
 // ---------- tiny "database" helpers ----------
-function loadDB() {
-  if (!fs.existsSync(DATA_FILE)) {
-    const seed = {
-    students: [],
-    companies: [],
-    jobs: []
-};
-    fs.writeFileSync(DATA_FILE, JSON.stringify(seed, null, 2));
-    return seed;
-  }
-  const db = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
 
-db.students = db.students || [];
-db.companies = db.companies || [];
-db.jobs = db.jobs || [];
-
-return db;
-}
-function saveDB(db) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
-}
 function newId(prefix) {
   return prefix + "_" + crypto.randomBytes(4).toString("hex");
 }
-function hashPassword(pw) {
-  // NOTE: For a real deployment use bcrypt/argon2 + salt.
-  // Kept as a fast built-in hash so this project runs with zero
-  // external dependencies for a classroom / demo setting.
-  return crypto.createHash("sha256").update(pw).digest("hex");
-}
+
 function publicStudent(s) {
   const { password, ...rest } = s;
   return rest;
@@ -429,6 +433,34 @@ if (studentMatch && req.method === "DELETE") {
     if (job.applicants.some((a) => a.studentId === b.studentId)) {
       return sendJSON(res, 409, { error: "Already applied to this job" });
     }
+    // ---- HIRE APPLICANT ----
+const hireMatch = pathname.match(/^\/api\/jobs\/([^/]+)\/hire\/([^/]+)$/);
+
+if (hireMatch && req.method === "POST") {
+
+    const job = db.jobs.find(j => j.id === hireMatch[1]);
+
+    if (!job) {
+        return sendJSON(res, 404, { error: "Job not found" });
+    }
+
+    const applicant = job.applicants.find(
+        a => a.studentId === hireMatch[2]
+    );
+
+    if (!applicant) {
+        return sendJSON(res, 404, { error: "Applicant not found" });
+    }
+
+    applicant.status = "hired";
+
+    saveDB(db);
+
+    return sendJSON(res, 200, {
+        success: true
+    });
+
+}
     job.applicants.push({
       studentId: b.studentId,
       studentName: student.name,

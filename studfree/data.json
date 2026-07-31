@@ -39,13 +39,23 @@
       "id": "job_7737189f",
       "title": "frontend developer",
       "company": "technova",
+      "companyId": "cmp_42d11059",
+      "companyEmail": "hr@technova.com",
       "description": "looking for a react developer",
       "skillsNeeded": [
         "Web Development"
       ],
       "budget": "15000",
       "posted": "2026-07-26T07:42:46.021Z",
-      "applicants": []
+      "applicants": [
+        {
+          "studentId": "stu_bff9c4de",
+          "studentName": "sri charan",
+          "message": "keen to work",
+          "status": "pending",
+          "date": "2026-07-27T10:19:05.756Z"
+        }
+      ]
     }
   ],
   "admins": [

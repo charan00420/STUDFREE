@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Applied Jobs</title>
+</head>
+
+<body>
+
+<h1>Applied Jobs</h1>
+
+<table border="1">
+
+<thead>
+<tr>
+<th>Job</th>
+<th>Company</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody id="jobsTable"></tbody>
+
+</table>
+
+<script>
+
+async function loadAppliedJobs(){
+
+const student = JSON.parse(localStorage.getItem("student"));
+
+const res = await fetch("/api/jobs");
+
+const data = await res.json();
+
+const table = document.getElementById("jobsTable");
+
+table.innerHTML = "";
+
+data.jobs.forEach(job=>{
+
+const application = job.applicants.find(
+a=>a.studentId===student.id
+);
+
+if(application){
+
+table.innerHTML+=`
+<tr>
+<td>${job.title}</td>
+<td>${job.company}</td>
+<td>${application.status}</td>
+</tr>
+`;
+
+}
+
+});
+
+}
+
+loadAppliedJobs();
+
+</script>
+
+</body>
+</html>
