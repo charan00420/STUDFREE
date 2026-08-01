@@ -109,6 +109,13 @@
       </div>
     </div>
   </div>
+  <div class="field">
+  <label for="resume">Upload Resume (PDF)</label>
+  <input type="file" id="resume" accept=".pdf">
+  <button id="uploadResume" class="btn brass" type="button">
+    Upload Resume
+  </button>
+</div>
 
   <div class="section">
     <div class="wrap">
@@ -237,6 +244,27 @@ applications.filter(a => a.application.status === "hired").length;
       el.innerHTML = `<div class="empty"><h3>Couldn't load applications</h3></div>`;
     }
   }
+  document.getElementById("uploadResume").addEventListener("click", async () => {
+
+  const file = document.getElementById("resume").files[0];
+
+  if (!file) {
+    toast("Please select a PDF.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("resume", file);
+
+  const res = await fetch(`/api/students/${session.id}/resume`, {
+    method: "POST",
+    body: formData
+  });
+
+  const data = await res.json();
+
+  toast(data.message || "Resume uploaded!");
+});
 </script>
 </body>
 </html>
