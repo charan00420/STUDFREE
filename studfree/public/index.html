@@ -21,6 +21,7 @@
       <a href="/login.html" data-auth="guest">Log in</a>
       <a href="/dashboard.html" data-auth="member">Dashboard</a>
       <a href="/jobs.html?post=1" class="btn small brass">Post a job</a>
+      <button id="themeToggle" class="btn ghost small">🌙</button>
     </nav>
   </div>
 </header>
@@ -95,8 +96,8 @@ India's campus freelance platform where students showcase their skills, build po
   <div class="wrap">
     <div class="section-head">
       <div>
-        <span class="kicker">On the roster</span>
-        <h2 class="mt-0">Recently listed students</h2>
+        <span class="kicker">Featured Students</span>
+        <h2 class="mt-0">⭐ Top Talent of the Week</h2>
       </div>
       <a href="/browse.html" class="btn ghost small">View full roster →</a>
     </div>
@@ -223,11 +224,108 @@ India's campus freelance platform where students showcase their skills, build po
 
   </div>
 </section>
-<footer>
+<section class="section">
   <div class="wrap">
-    <p>Connecting talented students with real opportunities across India.</p>
-    <p>© 2026 STUDFREE</p>
+
+    <div class="section-head">
+      <div>
+        <span class="kicker">Latest Opportunities</span>
+        <h2 class="mt-0">Recently Posted Jobs</h2>
+      </div>
+
+      <a href="/jobs.html" class="btn ghost small">
+        View All →
+      </a>
+    </div>
+
+    <div class="entry-list" id="latestJobs">
+      <div class="empty">Loading latest jobs...</div>
+    </div>
+
   </div>
+</section>
+<section class="section">
+  <div class="wrap">
+
+    <div class="section-head">
+      <div>
+        <span class="kicker">Trending Skills</span>
+        <h2 class="mt-0">Most in-demand skills</h2>
+      </div>
+    </div>
+
+    <div class="trending-skills">
+
+      <a href="/browse.html?skill=Web%20Development" class="skill-pill">🌐 Web Development</a>
+
+      <a href="/browse.html?skill=Python" class="skill-pill">🐍 Python</a>
+
+      <a href="/browse.html?skill=Java" class="skill-pill">☕ Java</a>
+
+      <a href="/browse.html?skill=UI/UX%20Design" class="skill-pill">🎨 UI/UX</a>
+
+      <a href="/browse.html?skill=Graphic%20Design" class="skill-pill">🖌 Graphic Design</a>
+
+      <a href="/browse.html?skill=Video%20Editing" class="skill-pill">🎬 Video Editing</a>
+
+      <a href="/browse.html?skill=Data%20Entry" class="skill-pill">⌨ Data Entry</a>
+
+      <a href="/browse.html?skill=App%20Development" class="skill-pill">📱 App Development</a>
+
+    </div>
+
+  </div>
+</section>
+<section class="section">
+  <div class="wrap">
+
+    <div class="section-head">
+      <div>
+        <span class="kicker">Why Choose StudFree?</span>
+        <h2 class="mt-0">Built for students. Trusted by companies.</h2>
+      </div>
+    </div>
+
+    <div class="features-grid">
+
+      <div class="feature-box">
+        <h3>💼 Real Projects</h3>
+        <p>Work on genuine freelance opportunities while still studying.</p>
+      </div>
+
+      <div class="feature-box">
+        <h3>💰 Earn While Learning</h3>
+        <p>Build experience and earn money before graduation.</p>
+      </div>
+
+      <div class="feature-box">
+        <h3>📄 Strong Portfolio</h3>
+        <p>Every completed project strengthens your professional profile.</p>
+      </div>
+
+      <div class="feature-box">
+        <h3>🚀 Career Growth</h3>
+        <p>Connect with startups and companies looking for fresh talent.</p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+<footer>
+<div class="wrap">
+
+<h2>STUDFREE</h2>
+
+<p>
+Connecting talented students with real freelance opportunities across India.
+</p>
+
+<p>
+© 2026 StudFree. All rights reserved.
+</p>
+
+</div>
 </footer>
 
 <script src="/js/app.js"></script>
@@ -237,21 +335,54 @@ India's campus freelance platform where students showcase their skills, build po
       const { students, jobs, hired } = await api("/stats").catch(() => ({}));
     } catch (e) {}
   })();
+function animateCounter(id, target) {
 
+  const el = document.getElementById(id);
+
+  let current = 0;
+
+  const increment = Math.max(1, Math.ceil(target / 40));
+
+  const timer = setInterval(() => {
+
+    current += increment;
+
+    if (current >= target) {
+      current = target;
+      clearInterval(timer);
+    }
+
+    el.textContent = current;
+
+  }, 30);
+
+}
   async function loadStats() {
-    try {
-      const data = await api("/stats");
-      document.getElementById("statStudents").textContent = data.students;
-      document.getElementById("statJobs").textContent = data.jobs;
-      document.getElementById("statHired").textContent = data.hired;
-    } catch (e) { /* server may not be running yet */ }
-  }
 
+  try {
+
+    const data = await api("/stats");
+
+    animateCounter("statStudents", data.students);
+
+    animateCounter("statJobs", data.jobs);
+
+    animateCounter("statHired", data.hired);
+
+  } catch (e) {}
+
+}
   async function loadFeatured() {
     const wrap = document.getElementById("featuredStudents");
     try {
       const { students } = await api("/students");
-      const top = students.slice(0, 3);
+      const top = students
+  .sort((a, b) => {
+    const scoreA = (a.projects?.length || 0) * 10 + (a.skills?.length || 0);
+    const scoreB = (b.projects?.length || 0) * 10 + (b.skills?.length || 0);
+    return scoreB - scoreA;
+  })
+  .slice(0, 3);
       if (!top.length) {
         wrap.innerHTML = `<div class="empty"><h3>No entries yet</h3><p>Be the first student on the roster.</p><a href="/signup.html" class="btn brass small" style="margin-top:10px;">Sign up</a></div>`;
         return;
@@ -265,6 +396,7 @@ India's campus freelance platform where students showcase their skills, build po
           <div>
             <div class="entry-title-row">
               <h3><a href="/student.html?id=${s.id}" style="text-decoration:none;">${escapeHtml(s.name)}</a></h3>
+              <span class="stamp brass">Top Talent</span>
               ${s.projects.length ? '<span class="stamp">verified project</span>' : ""}
             </div>
             <div class="sub">${escapeHtml(s.college || "Student")}${s.year ? " · " + escapeHtml(s.year) : ""}</div>
@@ -282,6 +414,8 @@ India's campus freelance platform where students showcase their skills, build po
 
   loadStats();
   loadFeatured();
+  loadLatestJobs();
+  
   document.getElementById("homeSearchBtn").addEventListener("click", () => {
     const q = document.getElementById("homeSearch").value.trim();
 
@@ -298,6 +432,76 @@ document.getElementById("homeSearch").addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
         document.getElementById("homeSearchBtn").click();
     }
+});
+
+async function loadLatestJobs() {
+
+  const wrap = document.getElementById("latestJobs");
+
+  try {
+
+    const { jobs } = await api("/jobs");
+
+    const latest = jobs.slice(0,3);
+
+    if(!latest.length){
+      wrap.innerHTML = `
+      <div class="empty">
+        <h3>No Jobs Yet</h3>
+        <p>Be the first company to post an opportunity.</p>
+      </div>`;
+      return;
+    }
+
+    wrap.innerHTML = latest.map(job=>`
+      <div class="entry">
+
+        <h3>${escapeHtml(job.title)}</h3>
+
+        <p>${escapeHtml(job.company)}</p>
+
+        <div class="tag-row">
+          <span class="tag">
+            ₹${escapeHtml(job.budget)}
+          </span>
+        </div>
+
+<div class="action">        
+          <a class="btn brass small"
+             href="/jobs.html">
+             Apply Now
+          </a>
+        </div>
+
+      </div>
+    `).join("");
+
+  }catch(e){
+
+    wrap.innerHTML="<div class='empty'>Unable to load jobs.</div>";
+
+  }
+
+}
+const themeBtn = document.getElementById("themeToggle");
+
+if (localStorage.getItem("theme") === "dark") {
+  document.body.classList.add("dark");
+  themeBtn.textContent = "☀";
+}
+
+themeBtn.addEventListener("click", () => {
+
+  document.body.classList.toggle("dark");
+
+  if (document.body.classList.contains("dark")) {
+    localStorage.setItem("theme", "dark");
+    themeBtn.textContent = "☀";
+  } else {
+    localStorage.setItem("theme", "light");
+    themeBtn.textContent = "🌙";
+  }
+
 });
 </script>
 </body>
